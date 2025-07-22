@@ -29,7 +29,7 @@ const introductionSchema = new mongoose.Schema({
         required: true
     },
     jobTitle: {
-        type: String,
+        type: [String], // Changed to array of strings
         required: true
     },
     description: {
@@ -39,6 +39,10 @@ const introductionSchema = new mongoose.Schema({
     myResume: {
         type: String,
         required: true
+    },
+    profileImage: {
+        type: String,
+        required: false
     },
 });
 
@@ -130,16 +134,39 @@ const projectSchema = new mongoose.Schema({
 const educationsSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
-    issuer: {
+    institution: {
         type: String,
-        required: true
+        required: true,
+        trim: true
+    },
+    degree: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    period: {
+        type: String,
+        required: true,
+        trim: true
     },
     description: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
+    grade: {
+        type: String,
+        required: false,
+        trim: true
+    },
+    location: {
+        type: String,
+        required: false,
+        trim: true
+    }
 });
 
 const certificateSchema = new mongoose.Schema({
@@ -191,6 +218,10 @@ const contactSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    lottieURL: {
+        type: String,
+        required: true
+    },
 
 });
 
@@ -213,6 +244,74 @@ const leftSiderSchema = new mongoose.Schema({
     },
 });
 
+const socialStatsSchema = new mongoose.Schema({
+    // Legacy fields for backward compatibility
+    yearsExperience: {
+        type: Number,
+        required: false
+    },
+    projectsCompleted: {
+        type: Number,
+        required: false
+    },
+    clientSatisfaction: {
+        type: Number,
+        required: false
+    },
+    linkedinFollowers: {
+        type: Number,
+        required: false
+    },
+    // New dynamic fields structure
+    fields: [{
+        id: {
+            type: String,
+            required: true
+        },
+        name: {
+            type: String,
+            required: true
+        },
+        value: {
+            type: Number,
+            required: true,
+            default: 0
+        },
+        category: {
+            type: String,
+            required: false,
+            enum: ['experience', 'projects', 'clients', 'skills', 'achievements', 'social'],
+            default: 'experience'
+        },
+        type: {
+            type: String,
+            required: false,
+            enum: ['static', 'dynamic'],
+            default: 'static'
+        },
+        unit: {
+            type: String,
+            required: false,
+            default: ''
+        },
+        enabled: {
+            type: Boolean,
+            required: false,
+            default: true
+        },
+        lastUpdated: {
+            type: Date,
+            default: Date.now
+        },
+        order: {
+            type: Number,
+            required: false,
+            default: 0
+        }
+    }]
+}, {
+    timestamps: true // Automatically add createdAt and updatedAt
+});
 
 const footerSchema = new mongoose.Schema({
     firstLine: {
@@ -238,4 +337,5 @@ module.exports = {
     Contact: mongoose.model('contacts', contactSchema),
     LeftSider: mongoose.model('leftSides', leftSiderSchema),
     Footer: mongoose.model('footer', footerSchema),
+    SocialStats: mongoose.model('socialStats', socialStatsSchema),
 };

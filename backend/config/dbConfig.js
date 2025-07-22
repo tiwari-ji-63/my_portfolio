@@ -8,7 +8,7 @@ connection.on('error', () => {
 });
 
 connection.on('connected', () => {
-    console.log('MongoDB Connected Successfully');
+    console.log('Database Connected Successfully');
 });
 
 module.exports = connection;

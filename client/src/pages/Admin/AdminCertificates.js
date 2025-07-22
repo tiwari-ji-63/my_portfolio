@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { Form, message, Modal } from "antd";
 import { HideLoading, ReloadData, ShowLoading } from "../../redux/rootSlice";
 import axios from "axios";
-import SectionTitle from "../../components/SectionTitle";
 
 function AdminCertificates() {
     const dispatch = useDispatch();
@@ -61,100 +60,210 @@ function AdminCertificates() {
     };
 
     return (
-        <div>
-            <SectionTitle title="Admin Certificate Management" />
-            <div className="flex justify-end mb-4">
-                <button className="bg-primary px-5 py-2 text-white mt-5 rounded font-bold hover:bg-secondary"
+        <div className="space-y-6 fade-in">
+            {/* Header Section */}
+            <div className="bg-gradient-to-r from-primary/5 to-secondary/5 p-6 rounded-2xl border border-gray-200">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                        <div className="admin-icon">
+                            <span className="text-xl">🏆</span>
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-bold text-primary">Certificates Management</h3>
+                            <p className="text-gray-600">Manage your professional certifications and achievements</p>
+                        </div>
+                    </div>
+                    <button 
+                        className="admin-btn-primary"
                         onClick={() => {
                             setSelectedItemForEdit(null);
                             setType("add");
                             setShowAddEditModal(true);
-                        }}>Add Certificate
-                </button>
+                        }}
+                    >
+                        <span className="flex items-center space-x-2">
+                            <span>➕</span>
+                            <span>Add Certificate</span>
+                        </span>
+                    </button>
+                </div>
             </div>
-            <div className="grid grid-cols-3 gap-5 sm:grid-cols-1">
-                {certificates.map((certificate) => (
-                    <div key={certificate._id}
-                         className="shadow border-2 p-5 border-tertiary hover:border-secondary flex flex-col gap-5">
-                    <h1 className="text-primary text-xl font-bold">{certificate.title}</h1>
-                        <hr/>
-                        <img src={certificate.image} alt=" " className="w-80 h-60"/>
-                        <h1>Certificate Name : {certificate.title}</h1>
-                        <h1>IssueDate : {certificate.issueDate}</h1>
-                        <h1 className="scrollable-description border-2 border-blue-500 bg-gray-100 p-3 rounded-lg shadow-lg">
-                            Description : {certificate.description}
-                        </h1>
 
-                        <div className="flex justify-end gap-5 mt-5">
+            {/* Certificates Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {certificates.map((certificate, index) => (
+                    <div key={certificate._id} className="admin-card group hover:scale-105 transition-all duration-300" style={{animationDelay: `${index * 100}ms`}}>
+                        {/* Certificate Image */}
+                        <div className="relative mb-4 overflow-hidden rounded-xl">
+                            <img 
+                                src={certificate.image} 
+                                alt={certificate.title}
+                                className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                                <div className="text-white">
+                                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                                        <span className="text-lg">🏆</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* Certificate Info */}
+                        <div className="space-y-3">
+                            <h3 className="text-xl font-bold text-primary group-hover:text-secondary transition-colors duration-300 line-clamp-2">
+                                {certificate.title}
+                            </h3>
+                            
+                            <div className="flex items-center space-x-2 text-sm text-gray-600">
+                                <span className="text-secondary font-semibold">📅</span>
+                                <span>Issued: {certificate.issueDate}</span>
+                            </div>
+                            
+                            <p className="text-gray-700 text-sm leading-relaxed bg-gray-50 p-3 rounded-lg line-clamp-3">
+                                {certificate.description}
+                            </p>
+                        </div>
+                        
+                        {/* Action Buttons */}
+                        <div className="flex justify-end space-x-2 mt-4 pt-4 border-t border-gray-200">
                             <button
-                                className="border-2 border-primary bg-secondary text-primary font-bold px-10 py-2 rounded  hover:border-tertiary hover:text-tertiary"
-                                onClick={() => {
-                                    onDelete(certificate);
-                                }}
-                            >Delete
+                                className="admin-btn-danger text-sm px-4 py-2"
+                                onClick={() => onDelete(certificate)}
+                            >
+                                <span className="flex items-center space-x-1">
+                                    <span>🗑️</span>
+                                    <span>Delete</span>
+                                </span>
                             </button>
                             <button
-                                className="border-2 border-primary bg-tertiary text-secondary font-bold px-10 py-2 rounded  hover:border-secondary hover:text-primary"
+                                className="admin-btn-secondary text-sm px-4 py-2"
                                 onClick={() => {
                                     setSelectedItemForEdit(certificate);
                                     setType("edit");
                                     setShowAddEditModal(true);
                                 }}
-                            >Edit
+                            >
+                                <span className="flex items-center space-x-1">
+                                    <span>✏️</span>
+                                    <span>Edit</span>
+                                </span>
                             </button>
                         </div>
                     </div>
                 ))}
             </div>
 
-            {
-                (type === "add" || selectedItemForEdit) && <Modal open={showAddEditModal}
-                                                                  title={selectedItemForEdit ? "Edit Certificate" : "Add Certificate"}
-                                                                  footer={null}
-                                                                  onCancel={() => {
-                                                                      setShowAddEditModal(false);
-                                                                      setSelectedItemForEdit(null);
-                                                                  }}
-                >
-                    <Form layout="vertical" onFinish={onFinish}
-                            initialValues={selectedItemForEdit || {}}
+            {/* Empty State */}
+            {certificates.length === 0 && (
+                <div className="admin-card text-center py-12">
+                    <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="text-3xl">🏆</span>
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-600 mb-2">No Certificates Added</h3>
+                    <p className="text-gray-500 mb-6">Start building your credentials by adding your first certificate</p>
+                    <button
+                        className="admin-btn-primary"
+                        onClick={() => {
+                            setSelectedItemForEdit(null);
+                            setType("add");
+                            setShowAddEditModal(true);
+                        }}
                     >
-                        <Form.Item name="title" label="Certificate Name or Issure" rules={[]}>
-                            <input placeholder="Certificate Name"/>
-                        </Form.Item>
-                        <Form.Item name="issueDate" label="Issue Date" rules={[]}>
-                            <input placeholder="Issue Date"/>
-                        </Form.Item>
-                        <Form.Item name="image" label="Certificate Image URL" rules={[]}>
-                            <input placeholder="Certificate Image"/>
-                        </Form.Item>
-                        <Form.Item name="description" label="Description" rules={[]}>
-                            <textarea className="scrollable-description" placeholder="Description"/>
-                        </Form.Item>
-                        {/*<Form.Item name="github_link" label="GitHub Link" rules={[]}>*/}
-                        {/*    <input placeholder="GitHub Link"/>*/}
-                        {/*</Form.Item>*/}
+                        <span className="flex items-center space-x-2">
+                            <span>🚀</span>
+                            <span>Add First Certificate</span>
+                        </span>
+                    </button>
+                </div>
+            )}
 
-                        <div className="flex justify-end gap-5">
-                            <button
-                                type="button"
-                                className="border-2 border-primary bg-secondary text-primary font-bold px-10 py-2 rounded  hover:border-tertiary hover:text-tertiary"
-                                onClick={() => {
-                                    setShowAddEditModal(false);
-                                    setSelectedItemForEdit(null);
-                                }}
-                            >Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                className="border-2 border-primary bg-tertiary text-secondary font-bold px-10 py-2 rounded  hover:border-secondary hover:text-primary"
-                            >{selectedItemForEdit ? "Update" : "Add"}
-                            </button>
+            {/* Add/Edit Modal */}
+            {(type === "add" || selectedItemForEdit) && (
+                <Modal 
+                    open={showAddEditModal}
+                    title={
+                        <div className="flex items-center space-x-3 p-2">
+                            <div className="admin-icon w-8 h-8">
+                                <span className="text-sm">{selectedItemForEdit ? "✏️" : "➕"}</span>
+                            </div>
+                            <span className="text-lg font-bold text-primary">
+                                {selectedItemForEdit ? "Edit Certificate" : "Add New Certificate"}
+                            </span>
                         </div>
-                    </Form>
-                </Modal>
-            }
+                    }
+                    footer={null}
+                    onCancel={() => {
+                        setShowAddEditModal(false);
+                        setSelectedItemForEdit(null);
+                    }}
+                    width={600}
+                    className="custom-modal"
+                >
+                    <div className="admin-form mt-6">
+                        <Form 
+                            layout="vertical" 
+                            onFinish={onFinish}
+                            initialValues={selectedItemForEdit || {}}
+                        >
+                            <Form.Item name="title" label="Certificate Title / Issuer" className="mb-4">
+                                <input 
+                                    placeholder="e.g., AWS Certified Solutions Architect"
+                                    className="admin-input w-full"
+                                />
+                            </Form.Item>
+                            
+                            <Form.Item name="issueDate" label="Issue Date" className="mb-4">
+                                <input 
+                                    placeholder="e.g., January 2024"
+                                    className="admin-input w-full"
+                                />
+                            </Form.Item>
+                            
+                            <Form.Item name="image" label="Certificate Image URL" className="mb-4">
+                                <input 
+                                    placeholder="https://example.com/certificate-image.jpg"
+                                    className="admin-input w-full"
+                                />
+                                <p className="text-sm text-gray-500 mt-2">🖼️ Upload your certificate image and paste the URL here</p>
+                            </Form.Item>
+                            
+                            <Form.Item name="description" label="Description" className="mb-6">
+                                <textarea 
+                                    placeholder="Describe what this certificate represents and the skills you gained..."
+                                    rows={4}
+                                    className="admin-input resize-none"
+                                />
+                            </Form.Item>
 
+                            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                                <button
+                                    type="button"
+                                    className="admin-btn-secondary"
+                                    onClick={() => {
+                                        setShowAddEditModal(false);
+                                        setSelectedItemForEdit(null);
+                                    }}
+                                >
+                                    <span className="flex items-center space-x-2">
+                                        <span>❌</span>
+                                        <span>Cancel</span>
+                                    </span>
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="admin-btn-primary"
+                                >
+                                    <span className="flex items-center space-x-2">
+                                        <span>{selectedItemForEdit ? "💾" : "➕"}</span>
+                                        <span>{selectedItemForEdit ? "Update" : "Add"}</span>
+                                    </span>
+                                </button>
+                            </div>
+                        </Form>
+                    </div>
+                </Modal>
+            )}
         </div>
     )
 }

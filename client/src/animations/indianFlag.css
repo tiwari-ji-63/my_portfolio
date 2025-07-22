@@ -1,0 +1,57 @@
+/* Indian Flag Colors Animation for Section Title Dots */
+@keyframes indianFlag1 {
+    0%, 100% { 
+        background-color: #ff9933; 
+        opacity: 0.6;
+        transform: scale(1);
+        box-shadow: 0 0 5px rgba(255, 153, 51, 0.3);
+    }
+    50% { 
+        background-color: #ff4500; 
+        opacity: 1;
+        transform: scale(1.5);
+        box-shadow: 0 0 15px rgba(255, 153, 51, 0.8);
+    }
+}
+
+@keyframes indianFlag2 {
+    0%, 100% { 
+        background-color: #ffffff; 
+        opacity: 0.6;
+        transform: scale(1);
+        box-shadow: 0 0 0 2px #ccc, 0 0 5px rgba(255, 255, 255, 0.3);
+    }
+    50% { 
+        background-color: #f0f0f0; 
+        opacity: 1;
+        transform: scale(1.5);
+        box-shadow: 0 0 0 2px #888, 0 0 15px rgba(255, 255, 255, 0.9);
+    }
+}
+
+@keyframes indianFlag3 {
+    0%, 100% { 
+        background-color: #138808; 
+        opacity: 0.6;
+        transform: scale(1);
+        box-shadow: 0 0 5px rgba(19, 136, 8, 0.3);
+    }
+    50% { 
+        background-color: #006400; 
+        opacity: 1;
+        transform: scale(1.5);
+        box-shadow: 0 0 15px rgba(19, 136, 8, 0.8);
+    }
+}
+
+.indian-flag-dot-1 {
+    animation: indianFlag1 1.5s infinite ease-in-out;
+}
+
+.indian-flag-dot-2 {
+    animation: indianFlag2 1.5s infinite ease-in-out 0.25s;
+}
+
+.indian-flag-dot-3 {
+    animation: indianFlag3 1.5s infinite ease-in-out 0.5s;
+}

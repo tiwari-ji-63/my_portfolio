@@ -3,7 +3,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { Form, message, Modal } from "antd";
 import { HideLoading, ReloadData, ShowLoading } from "../../redux/rootSlice";
 import axios from "axios";
-import SectionTitle from "../../components/SectionTitle";
 
 function AdminProjects() {
     const dispatch = useDispatch();
@@ -63,108 +62,226 @@ function AdminProjects() {
     };
 
     return (
-        <div>
-            <SectionTitle title="Admin Project Management" />
-            <div className="flex justify-end mb-4 ">
-                <button className="bg-primary px-5 py-2 text-white mt-5 rounded font-bold hover:bg-secondary"
+        <div className="space-y-6 fade-in">
+            {/* Header Section */}
+            <div className="bg-gradient-to-r from-primary/5 to-secondary/5 p-6 rounded-2xl border border-gray-200">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                        <div className="admin-icon">
+                            <span className="text-xl">🚀</span>
+                        </div>
+                        <div>
+                            <h3 className="text-xl font-bold text-primary">Projects Management</h3>
+                            <p className="text-gray-600">Manage your portfolio projects and showcases</p>
+                        </div>
+                    </div>
+                    <button 
+                        className="admin-btn-primary"
                         onClick={() => {
                             setSelectedItemForEdit(null);
                             setType("add");
                             setShowAddEditModal(true);
-                        }}>Add Project
-                </button>
+                        }}
+                    >
+                        <span className="flex items-center space-x-2">
+                            <span>➕</span>
+                            <span>Add Project</span>
+                        </span>
+                    </button>
+                </div>
             </div>
-            <div className="grid grid-cols-3 gap-5 sm:grid-cols-1 ">
-                {projects.map((project) => (
-                    <div key={project._id}
-                         className="shadow border-2 p-5 border-tertiary hover:border-secondary flex flex-col gap-5">
-                    <h1 className="text-primary text-xl font-bold">{project.title}</h1>
-                        <hr/>
-                        <img src={project.image} alt=" " className="w-80 h-60"/>
-                        <h1>Project Name : {project.title}</h1>
-                        <h1>Used Technologies : {project.technologies}</h1>
-                        <h1>Project Link : {project.project_link}</h1>
-                        <h1>GitHub Link : {project.github_link}</h1>
-                        <h1 className="scrollable-description border-2 border-blue-500 bg-gray-100 p-3 rounded-lg shadow-lg">
-                            Description : {project.description}
-                        </h1>
 
-                        <div className="flex justify-end gap-5 mt-5">
+            {/* Projects Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {projects.map((project, index) => (
+                    <div key={project._id} className="admin-card group hover:scale-105 transition-all duration-300" style={{animationDelay: `${index * 100}ms`}}>
+                        {/* Project Image */}
+                        <div className="relative mb-4 overflow-hidden rounded-xl">
+                            <img 
+                                src={project.image} 
+                                alt={project.title}
+                                className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-110"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        </div>
+                        
+                        {/* Project Info */}
+                        <div className="space-y-3">
+                            <h3 className="text-xl font-bold text-primary group-hover:text-secondary transition-colors duration-300">
+                                {project.title}
+                            </h3>
+                            
+                            <div className="space-y-2 text-sm text-gray-600">
+                                <div className="flex items-start space-x-2">
+                                    <span className="text-secondary font-semibold">🛠️ Tech:</span>
+                                    <div className="flex flex-wrap gap-1">
+                                        {project.technologies?.map((tech, i) => (
+                                            <span key={i} className="bg-secondary/10 text-secondary px-2 py-1 rounded-full text-xs font-medium">
+                                                {tech}
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                                
+                                <div className="flex items-center space-x-2">
+                                    <span className="text-secondary font-semibold">🔗 Links:</span>
+                                    <div className="flex space-x-2">
+                                        {project.project_link && (
+                                            <a href={project.project_link} target="_blank" rel="noopener noreferrer" 
+                                               className="text-tertiary hover:text-secondary transition-colors duration-300">
+                                                Live
+                                            </a>
+                                        )}
+                                        {project.github_link && (
+                                            <a href={project.github_link} target="_blank" rel="noopener noreferrer"
+                                               className="text-tertiary hover:text-secondary transition-colors duration-300">
+                                                GitHub
+                                            </a>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <p className="text-gray-700 text-sm leading-relaxed bg-gray-50 p-3 rounded-lg">
+                                {project.description}
+                            </p>
+                        </div>
+                        
+                        {/* Action Buttons */}
+                        <div className="flex justify-end space-x-2 mt-4 pt-4 border-t border-gray-200">
                             <button
-                                className="border-2 border-primary bg-secondary text-primary font-bold px-10 py-2 rounded  hover:border-tertiary hover:text-tertiary"
-                                onClick={() => {
-                                    onDelete(project);
-                                }}
-                            >Delete
+                                className="admin-btn-danger text-sm px-4 py-2"
+                                onClick={() => onDelete(project)}
+                            >
+                                <span className="flex items-center space-x-1">
+                                    <span>🗑️</span>
+                                    <span>Delete</span>
+                                </span>
                             </button>
                             <button
-                                className="border-2 border-primary bg-tertiary text-secondary font-bold px-10 py-2 rounded  hover:border-secondary hover:text-primary"
+                                className="admin-btn-secondary text-sm px-4 py-2"
                                 onClick={() => {
                                     setSelectedItemForEdit(project);
                                     setType("edit");
                                     setShowAddEditModal(true);
                                 }}
-                            >Edit
+                            >
+                                <span className="flex items-center space-x-1">
+                                    <span>✏️</span>
+                                    <span>Edit</span>
+                                </span>
                             </button>
                         </div>
                     </div>
                 ))}
             </div>
 
-            {
-                (type === "add" || selectedItemForEdit) && <Modal open={showAddEditModal}
-                                                                  title={selectedItemForEdit ? "Edit Project" : "Add Project"}
-                                                                  footer={null}
-                                                                  onCancel={() => {
-                                                                      setShowAddEditModal(false);
-                                                                      setSelectedItemForEdit(null);
-                                                                  }}
-                >
-                    <Form layout="vertical" onFinish={onFinish}
-                          initialValues={{
-                              ...selectedItemForEdit,
-                              technologies: selectedItemForEdit?.technologies?.join(" , "), // Convert array to string
-                          } || {}}
-                    >
-                        <Form.Item name="title" label="Project Name" rules={[]}>
-                            <input placeholder="Project Name"/>
-                        </Form.Item>
-                        <Form.Item name="technologies" label="Used Technologies ( Separated by (Comma , ) )" rules={[]}>
-                            <input placeholder="Used Technologies"/>
-                        </Form.Item>
-                        <Form.Item name="image" label="Project Image URL" rules={[]}>
-                            <input placeholder="Project Image"/>
-                        </Form.Item>
-                        <Form.Item name="description" label="Description" rules={[]}>
-                            <textarea className="scrollable-description" placeholder="Description"/>
-                        </Form.Item>
-                        <Form.Item name="project_link" label="Project Link" rules={[]}>
-                            <input placeholder="Project Link"/>
-                        </Form.Item>
-                        <Form.Item name="github_link" label="GitHub Link" rules={[]}>
-                            <input placeholder="GitHub Link"/>
-                        </Form.Item>
-
-                        <div className="flex justify-end gap-5">
-                            <button
-                                type="button"
-                                className="border-2 border-primary bg-secondary text-primary font-bold px-10 py-2 rounded  hover:border-tertiary hover:text-tertiary"
-                                onClick={() => {
-                                    setShowAddEditModal(false);
-                                    setSelectedItemForEdit(null);
-                                }}
-                            >Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                className="border-2 border-primary bg-tertiary text-secondary font-bold px-10 py-2 rounded  hover:border-secondary hover:text-primary"
-                            >{selectedItemForEdit ? "Update" : "Add"}
-                            </button>
+            {/* Add/Edit Modal */}
+            {(type === "add" || selectedItemForEdit) && (
+                <Modal 
+                    open={showAddEditModal}
+                    title={
+                        <div className="flex items-center space-x-3 p-2">
+                            <div className="admin-icon w-8 h-8">
+                                <span className="text-sm">{selectedItemForEdit ? "✏️" : "➕"}</span>
+                            </div>
+                            <span className="text-lg font-bold text-primary">
+                                {selectedItemForEdit ? "Edit Project" : "Add New Project"}
+                            </span>
                         </div>
-                    </Form>
-                </Modal>
-            }
+                    }
+                    footer={null}
+                    onCancel={() => {
+                        setShowAddEditModal(false);
+                        setSelectedItemForEdit(null);
+                    }}
+                    width={700}
+                    className="custom-modal"
+                >
+                    <div className="admin-form mt-6">
+                        <Form 
+                            layout="vertical" 
+                            onFinish={onFinish}
+                            initialValues={{
+                                ...selectedItemForEdit,
+                                technologies: selectedItemForEdit?.technologies?.join(" , "),
+                            } || {}}
+                        >
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <Form.Item name="title" label="Project Name" className="mb-4">
+                                    <input 
+                                        placeholder="Enter project name..."
+                                        className="admin-input w-full px-4 py-3 bg-white/80 border-2 border-gray-200 rounded-xl text-primary placeholder-gray-400 focus:outline-none focus:border-secondary focus:bg-white transition-all duration-300"
+                                    />
+                                </Form.Item>
+                                
+                                <Form.Item name="image" label="Project Image URL" className="mb-4">
+                                    <input 
+                                        placeholder="Enter image URL..."
+                                        className="admin-input w-full px-4 py-3 bg-white/80 border-2 border-gray-200 rounded-xl text-primary placeholder-gray-400 focus:outline-none focus:border-secondary focus:bg-white transition-all duration-300"
+                                    />
+                                </Form.Item>
+                            </div>
+                            
+                            <Form.Item name="technologies" label="Technologies (Separated by comma , )" className="mb-4">
+                                <input 
+                                    placeholder="React, Node.js, MongoDB..."
+                                    className="admin-input w-full px-4 py-3 bg-white/80 border-2 border-gray-200 rounded-xl text-primary placeholder-gray-400 focus:outline-none focus:border-secondary focus:bg-white transition-all duration-300"
+                                />
+                            </Form.Item>
+                            
+                            <Form.Item name="description" label="Description" className="mb-4">
+                                <textarea 
+                                    placeholder="Describe your project..."
+                                    rows={4}
+                                    className="admin-input w-full px-4 py-3 bg-white/80 border-2 border-gray-200 rounded-xl text-primary placeholder-gray-400 focus:outline-none focus:border-secondary focus:bg-white transition-all duration-300 resize-none"
+                                />
+                            </Form.Item>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <Form.Item name="project_link" label="Live Demo Link" className="mb-6">
+                                    <input 
+                                        placeholder="https://your-project.com"
+                                        className="admin-input w-full px-4 py-3 bg-white/80 border-2 border-gray-200 rounded-xl text-primary placeholder-gray-400 focus:outline-none focus:border-secondary focus:bg-white transition-all duration-300"
+                                    />
+                                </Form.Item>
+                                
+                                <Form.Item name="github_link" label="GitHub Repository" className="mb-6">
+                                    <input 
+                                        placeholder="https://github.com/username/repo"
+                                        className="admin-input w-full px-4 py-3 bg-white/80 border-2 border-gray-200 rounded-xl text-primary placeholder-gray-400 focus:outline-none focus:border-secondary focus:bg-white transition-all duration-300"
+                                    />
+                                </Form.Item>
+                            </div>
 
+                            <div className="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                                <button
+                                    type="button"
+                                    className="admin-btn-secondary"
+                                    onClick={() => {
+                                        setShowAddEditModal(false);
+                                        setSelectedItemForEdit(null);
+                                    }}
+                                >
+                                    <span className="flex items-center space-x-2">
+                                        <span>❌</span>
+                                        <span>Cancel</span>
+                                    </span>
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="admin-btn-primary"
+                                >
+                                    <span className="flex items-center space-x-2">
+                                        <span>{selectedItemForEdit ? "💾" : "➕"}</span>
+                                        <span>{selectedItemForEdit ? "Update" : "Add"}</span>
+                                    </span>
+                                </button>
+                            </div>
+                        </Form>
+                    </div>
+                </Modal>
+            )}
         </div>
     )
 }
