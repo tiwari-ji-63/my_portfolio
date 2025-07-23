@@ -1,19 +1,44 @@
-import React from 'react';
+import React, { useState } from 'react';
+import PremiumImageInput from '../../components/PremiumImageInput';
 import { useDispatch, useSelector } from "react-redux";
 import { Form, message, Modal } from "antd";
 import { HideLoading, ReloadData, ShowLoading } from "../../redux/rootSlice";
 import axios from "axios";
 
+
+// Helper to upload image file and get URL
+async function uploadImageFile(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+    const response = await axios.post('/api/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data.url;
+}
+
 function AdminCertificates() {
     const dispatch = useDispatch();
-    const [showAddEditModal, setShowAddEditModal] = React.useState(false);
-    const [selectedItemForEdit, setSelectedItemForEdit] = React.useState(null);
+    const [showAddEditModal, setShowAddEditModal] = useState(false);
+    const [selectedItemForEdit, setSelectedItemForEdit] = useState(null);
     const { portfolioData } = useSelector((state) => state.root);
     const { certificates } = portfolioData;
-    const [type, setType] = React.useState("add");
+    const [type, setType] = useState("add");
+    // Premium image input state
+    const [imageInputType, setImageInputType] = useState('url');
+    const [certificateImage, setCertificateImage] = useState("");
 
     const onFinish = async (values) => {
         try {
+            // Handle image: if File, upload and get URL; if string, use as is
+            let imageUrl = certificateImage;
+            if (certificateImage && typeof certificateImage !== 'string') {
+                dispatch(ShowLoading());
+                imageUrl = await uploadImageFile(certificateImage);
+                dispatch(HideLoading());
+            }
+            if (imageUrl) {
+                values.image = imageUrl;
+            }
             dispatch(ShowLoading());
             let response;
             if (selectedItemForEdit) {
@@ -30,6 +55,7 @@ function AdminCertificates() {
                 message.success(response.data.message);
                 setShowAddEditModal(false);
                 setSelectedItemForEdit(null);
+                setCertificateImage("");
                 dispatch(ReloadData(true));
             } else {
                 message.error(response.data.message);
@@ -220,13 +246,15 @@ function AdminCertificates() {
                                 />
                             </Form.Item>
                             
-                            <Form.Item name="image" label="Certificate Image URL" className="mb-4">
-                                <input 
-                                    placeholder="https://example.com/certificate-image.jpg"
-                                    className="admin-input w-full"
+                            <div className="mb-4">
+                                <PremiumImageInput
+                                    value={certificateImage || selectedItemForEdit?.image || ""}
+                                    onChange={setCertificateImage}
+                                    inputType={imageInputType}
+                                    setInputType={setImageInputType}
+                                    label="Certificate Image"
                                 />
-                                <p className="text-sm text-gray-500 mt-2">🖼️ Upload your certificate image and paste the URL here</p>
-                            </Form.Item>
+                            </div>
                             
                             <Form.Item name="description" label="Description" className="mb-6">
                                 <textarea 

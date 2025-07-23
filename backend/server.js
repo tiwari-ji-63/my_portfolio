@@ -1,11 +1,12 @@
 const express = require('express');
-
-const app = express();
+const path = require('path');
 require('dotenv').config();
 const dbConfig = require("./config/dbConfig");
-
 const portfolioRoute = require('./routes/portfolioRoute');
 const contactRoute = require('./routes/contactRoute');
+const uploadRoute = require('./routes/uploadRoute');
+
+const app = express();
 
 // Add CORS middleware to fix network errors
 app.use((req, res, next) => {
@@ -23,12 +24,14 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
+// Serve uploaded images statically
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/api/upload', uploadRoute);
+
 app.use("/api/portfolio", portfolioRoute);
 app.use("/api/contact", contactRoute);
 
 const port = process.env.PORT || 5000;
-
-const path = require("path");
 
 if (process.env.NODE_ENV === "production") {
     app.use(express.static(path.join(__dirname, "client/build")));
@@ -39,5 +42,4 @@ if (process.env.NODE_ENV === "production") {
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
-    }
-);
+});

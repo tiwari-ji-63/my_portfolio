@@ -1,21 +1,45 @@
-import React from 'react';
+
+import React, { useState } from 'react';
+import PremiumImageInput from '../../components/PremiumImageInput';
 import { useDispatch, useSelector } from "react-redux";
 import { Form, message, Modal } from "antd";
 import { HideLoading, ReloadData, ShowLoading } from "../../redux/rootSlice";
 import axios from "axios";
 
+// Helper to upload image file and get URL
+async function uploadImageFile(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+    const response = await axios.post('/api/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return response.data.url;
+}
+
 function AdminProjects() {
     const dispatch = useDispatch();
-    const [showAddEditModal, setShowAddEditModal] = React.useState(false);
-    const [selectedItemForEdit, setSelectedItemForEdit] = React.useState(null);
+    const [showAddEditModal, setShowAddEditModal] = useState(false);
+    const [selectedItemForEdit, setSelectedItemForEdit] = useState(null);
     const { portfolioData } = useSelector((state) => state.root);
     const { projects } = portfolioData;
-    const [type, setType] = React.useState("add");
+    const [type, setType] = useState("add");
+    const [imageInputType, setImageInputType] = useState('url');
+    const [projectImage, setProjectImage] = useState("");
 
     const onFinish = async (values) => {
         try {
             const temptechnologies = values.technologies.split(" , ");
             values.technologies = temptechnologies;
+            // Handle image: if File, upload and get URL; if string, use as is
+            let imageUrl = projectImage;
+            if (projectImage && typeof projectImage !== 'string') {
+                dispatch(ShowLoading());
+                imageUrl = await uploadImageFile(projectImage);
+                dispatch(HideLoading());
+            }
+            if (imageUrl) {
+                values.image = imageUrl;
+            }
             dispatch(ShowLoading());
             let response;
             if (selectedItemForEdit) {
@@ -32,6 +56,7 @@ function AdminProjects() {
                 message.success(response.data.message);
                 setShowAddEditModal(false);
                 setSelectedItemForEdit(null);
+                setProjectImage("");
                 dispatch(ReloadData(true));
             } else {
                 message.error(response.data.message);
@@ -215,12 +240,15 @@ function AdminProjects() {
                                     />
                                 </Form.Item>
                                 
-                                <Form.Item name="image" label="Project Image URL" className="mb-4">
-                                    <input 
-                                        placeholder="Enter image URL..."
-                                        className="admin-input w-full px-4 py-3 bg-white/80 border-2 border-gray-200 rounded-xl text-primary placeholder-gray-400 focus:outline-none focus:border-secondary focus:bg-white transition-all duration-300"
-                                    />
-                                </Form.Item>
+                                <div className="mb-4">
+                            <PremiumImageInput
+                                value={projectImage || selectedItemForEdit?.image || ""}
+                                onChange={setProjectImage}
+                                inputType={imageInputType}
+                                setInputType={setImageInputType}
+                                label={null}
+                            />
+                                </div>
                             </div>
                             
                             <Form.Item name="technologies" label="Technologies (Separated by comma , )" className="mb-4">

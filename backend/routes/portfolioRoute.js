@@ -19,30 +19,9 @@ const { sendPasswordResetEmail } = require('../utils/emailService');
 
 // Get all Portfolio data
 
-// Test route to check education data specifically
-router.get('/test-education', async (req, res) => {
-    try {
-        console.log('Testing education data fetch...');
-        const educations = await Education.find();
-        console.log('Education count:', educations.length);
-        console.log('Education data:', educations);
-        res.status(200).json({
-            success: true,
-            count: educations.length,
-            data: educations
-        });
-    } catch (error) {
-        console.error('Education test error:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
-    }
-});
 
 router.get('/get-portfolio-data', async (req, res) => {
     try {
-        console.log('Backend - Starting to fetch portfolio data...');
         const headers = await Header.find();
         const introductions = await Introduction.find();
         const abouts = await About.find();
@@ -50,74 +29,19 @@ router.get('/get-portfolio-data', async (req, res) => {
         const experiences = await Experience.find();
         const projects = await Project.find();
         const educations = await Education.find();
-        console.log('Backend - Education count:', educations.length);
-        console.log('Backend - Education data:', educations);
         const certificates = await Certificate.find();
         const contacts = await Contact.find();
         const leftSides = await LeftSider.find();
         const footer = await Footer.find();
         const socialStats = await SocialStats.find();
 
-        // Add prefixes to email and phone
-        if (leftSides [0]) {
+        if (leftSides[0]) {
             leftSides[0].email = `mailto:${leftSides[0].email}`;
-            // leftSides[0].phone = `tel:+91${leftSides[0].phone}`;
         }
 
         // Ensure socialStats has default values if none exist
         let socialStatsData = socialStats[0];
-        if (!socialStatsData) {
-            // Create default social stats with new schema structure
-            socialStatsData = new SocialStats({
-                fields: [
-                    {
-                        id: `field_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                        name: 'Years of Experience',
-                        value: 5,
-                        category: 'experience',
-                        type: 'static',
-                        unit: '+',
-                        enabled: true,
-                        order: 0,
-                        lastUpdated: new Date()
-                    },
-                    {
-                        id: `field_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                        name: 'Projects Completed',
-                        value: 120,
-                        category: 'projects',
-                        type: 'static',
-                        unit: '+',
-                        enabled: true,
-                        order: 1,
-                        lastUpdated: new Date()
-                    },
-                    {
-                        id: `field_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                        name: 'Happy Clients',
-                        value: 85,
-                        category: 'clients',
-                        type: 'static',
-                        unit: '+',
-                        enabled: true,
-                        order: 2,
-                        lastUpdated: new Date()
-                    },
-                    {
-                        id: `field_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-                        name: 'LinkedIn Followers',
-                        value: 1250,
-                        category: 'social',
-                        type: 'static',
-                        unit: '+',
-                        enabled: true,
-                        order: 3,
-                        lastUpdated: new Date()
-                    }
-                ]
-            });
-            await socialStatsData.save();
-        }
+        // If no socialStatsData, do not create default. Just leave as undefined/null.
 
         res.status(200).send({
             headers: headers[0],
@@ -521,9 +445,7 @@ router.post('/reorder-social-stats-fields', async (req, res) => {
 // Live LinkedIn Follower Count API
 router.get('/linkedin-followers', async (req, res) => {
     try {
-        console.log('Fetching live LinkedIn follower count...');
         const followerData = await linkedInService.getLiveFollowerCount();
-        
         res.status(200).send({
             success: true,
             data: followerData,
@@ -569,39 +491,31 @@ router.post('/update-linkedin-base-count', async (req, res) => {
 // Auto-sync LinkedIn followers to Social Stats
 router.post('/sync-linkedin-to-social-stats', async (req, res) => {
     try {
-        console.log('Syncing LinkedIn followers to social stats...');
-        
         // Get live LinkedIn count
         const followerData = await linkedInService.getLiveFollowerCount();
-        
         if (!followerData.success) {
             return res.status(500).send({
                 success: false,
                 message: 'Failed to get LinkedIn follower count'
             });
         }
-        
         // Update social stats with LinkedIn count
         let socialStats = await SocialStats.findOne();
-        
         if (!socialStats) {
             return res.status(404).send({
                 success: false,
                 message: 'Social stats not found. Please create social stats first.'
             });
         }
-        
         // Find LinkedIn field in social stats
         const linkedinField = socialStats.fields.find(field => 
             field.name.toLowerCase().includes('linkedin') || 
             field.id.includes('linkedin')
         );
-        
         if (linkedinField) {
             // Update existing LinkedIn field
             linkedinField.value = followerData.count;
             await socialStats.save();
-            
             res.status(200).send({
                 success: true,
                 message: 'LinkedIn followers synced successfully',
@@ -619,10 +533,8 @@ router.post('/sync-linkedin-to-social-stats', async (req, res) => {
                 value: followerData.count,
                 order: socialStats.fields.length
             };
-            
             socialStats.fields.push(newLinkedInField);
             await socialStats.save();
-            
             res.status(200).send({
                 success: true,
                 message: 'LinkedIn followers field added and synced successfully',
@@ -966,7 +878,6 @@ router.post('/forgot-password', async (req, res) => {
     try {
         const { username } = req.body;
         
-        console.log('Forgot password attempt:', { username });
         
         if (!username || !username.trim()) {
             return res.status(400).send({
@@ -983,7 +894,6 @@ router.post('/forgot-password', async (req, res) => {
             ]
         });
         
-        console.log('User found for password reset:', !!user);
         
         if (!user) {
             return res.status(200).send({
@@ -1007,7 +917,6 @@ router.post('/forgot-password', async (req, res) => {
         user.resetPasswordExpires = resetExpires;
         await user.save();
 
-        console.log('Reset token generated for user:', user.username);
 
         // Send via Email
         const emailResult = await sendPasswordResetEmail(user.email, user.username, resetToken);
@@ -1050,7 +959,6 @@ router.post('/reset-password', async (req, res) => {
     try {
         const { username, resetToken, newPassword } = req.body;
         
-        console.log('Password reset attempt:', { username, tokenProvided: !!resetToken });
         
         // Find user by either username or email with valid reset token
         const user = await User.findOne({
@@ -1066,7 +974,6 @@ router.post('/reset-password', async (req, res) => {
             ]
         });
 
-        console.log('User found for password reset:', !!user);
 
         if (!user) {
             return res.status(200).send({
@@ -1082,14 +989,12 @@ router.post('/reset-password', async (req, res) => {
         user.updatedAt = new Date();
         await user.save();
 
-        console.log('Password reset successful for user:', user.username);
 
         res.status(200).send({
             success: true,
             message: 'Password reset successfully'
         });
     } catch (error) {
-        console.error('Password reset error:', error);
         res.status(500).send({
             success: false,
             message: 'Server error',
@@ -1272,7 +1177,6 @@ router.post('/admin-login', async (req, res) => {
     try {
         const { username, password } = req.body;
         
-        console.log('Login attempt:', { username, passwordProvided: !!password });
         
         // Validate input
         if (!username || !password) {
@@ -1295,7 +1199,6 @@ router.post('/admin-login', async (req, res) => {
             ]
         });
         
-        console.log('User found:', !!user);
         
         if (user) {
             // Don't send password back to client
@@ -1304,7 +1207,6 @@ router.post('/admin-login', async (req, res) => {
             delete userResponse.resetPasswordToken;
             delete userResponse.resetPasswordExpires;
             
-            console.log('Login successful for user:', userResponse.username);
             
             res.status(200).send({
                 success: true,
@@ -1312,14 +1214,12 @@ router.post('/admin-login', async (req, res) => {
                 data: userResponse
             });
         } else {
-            console.log('Login failed - invalid credentials');
             res.status(200).send({
                 success: false,
                 message: 'Invalid username/email/mobile or password'
             });
         }
     } catch (error) {
-        console.error('Login error:', error);
         res.status(500).send({
             success: false,
             message: 'Internal server error',
